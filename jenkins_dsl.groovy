@@ -55,7 +55,7 @@ job('testing and email-sending-t6'){
 buildPipelineView('task-6-build-pipelineview') {
     title('task-6-build-pipelineview')
     displayedBuilds(3)
-    selectedJob('seed-job-t6')
+    selectedJob('github-pull-t6')
 }
 
 
