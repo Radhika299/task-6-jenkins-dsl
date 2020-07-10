@@ -4,7 +4,7 @@ job('github-pull-t6'){
          }       
 
     triggers{
-                scm(' * * * * * ')
+                upstream('seed-job-t6','SUCCESS')
            }
     
     steps{
@@ -21,7 +21,7 @@ job('auto-deploy-t6'){
             upstream('github-pull-t6','SUCCESS')
          }
      steps{
-	shell('cd /var/lib/jenkins/workspace/seed-job-t6/; if ls  | grep .html; then if sudo kubectl get deployment | grep web-html-deployment; then echo "deployment for html application already running"; kubectl rollout restart deployment /web-html-deployment; else sudo kubectl create -f /task6-jenkinsdsl/htmlpv.yml; sudo kubectl create -f /task6-jenkinsdsl/htmldeployment.yml;  sudo kubectl create -f /task6-jenkinsdsl/htmlexpose.yml; fi;  elif ls | grep .php; then if sudo kubectl get deployment | grep web-php-deployment; then echo "deployment for php application already running"; kubectl rollout restart deployment /web-html-deployment; else sudo kubectl create -f /task6-jenkinsdsl/phppv.yml; sudo kubectl create -f /task6-jenkinsdsl/phpdeployment.yml;  sudo kubectl create -f /task6-jenkinsdsl/htmlexpose.yml; fi;  else echo "other files can not deploy automatically"; fi')
+	shell('cd /var/lib/jenkins/workspace/seed-job-t6/; if ls  | grep .html; then if sudo kubectl get deployment | grep web-html-deployment; then echo "deployment for html application already running"; kubectl rollout restart deployment/web-html-deployment; else sudo kubectl create -f /task6-jenkinsdsl/htmlpv.yml; sudo kubectl create -f /task6-jenkinsdsl/htmldeployment.yml;  sudo kubectl create -f /task6-jenkinsdsl/htmlexpose.yml; fi;  elif ls | grep .php; then if sudo kubectl get deployment | grep web-php-deployment; then echo "deployment for php application already running"; kubectl rollout restart deployment/web-php-deployment; else sudo kubectl create -f /task6-jenkinsdsl/phppv.yml; sudo kubectl create -f /task6-jenkinsdsl/phpdeployment.yml;  sudo kubectl create -f /task6-jenkinsdsl/phpexpose.yml; fi;  else echo "other files can not deploy automatically"; fi')
         }
 
 }
@@ -31,7 +31,7 @@ job('testing and email-sending-t6'){
            upstream('auto-deploy-t6','SUCCESS')
          }
     steps{
-            shell('if kubectl get svc html-pod-expose ; then status1=$( curl -o /dev/null  -s -w "%{http_code}" http://192.168.99.104:31000/index.html ); if [[ $status1 == 200  ]]; then exit 0; else exit 1; fi; elif kubectl get svc php-pod-expose; then status1=$( curl -o /dev/null  -s -w "%{http_code}" http://192.168.99.104:32000/index.php ); if [[ $status1 == 200  ]]; then exit 0; else exit 1; fi;  else echo "No pod is exposed , so no need of testing"; fi')
+            shell('if sudo kubectl get svc html-pod-expose ; then status1=$( curl -o /dev/null  -s -w "%{http_code}" http://192.168.99.104:31000/index.html ); if [[ $status1 == 200  ]]; then exit 0; else exit 1; fi; elif sudo kubectl get svc php-pod-expose; then status1=$( curl -o /dev/null  -s -w "%{http_code}" http://192.168.99.104:32000/index.php ); if [[ $status1 == 200  ]]; then exit 0; else exit 1; fi;  else echo "No pod is exposed , so no need of testing"; fi')
        }
      publishers {
         extendedEmail {
@@ -52,11 +52,11 @@ job('testing and email-sending-t6'){
 }
 
 
-/*buildPipelineView('task-6-build-pipelineview') {
+buildPipelineView('task-6-build-pipelineview') {
     title('task-6-build-pipelineview')
     displayedBuilds(3)
-    selectedJob('seed-job-githubpull-t6')
-}*/
+    selectedJob('seed-job-t6')
+}
 
 
 
